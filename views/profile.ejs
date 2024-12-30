@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatterSpire | 个人中心</title>
+    <link rel="stylesheet" href="/css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+    <script src="/core/theme-manager.js" defer></script>
+</head>
+<body>
+    <div class="container profile-container">
+        <div class="profile-header">
+            <h2>个人中心</h2>
+            <div class="header-actions">
+                <% if (user.role === 'admin') { %>
+                    <a href="/admin" class="admin-btn">系统管理</a>
+                <% } %>
+                <a href="/auth/logout" class="logout-btn">退出登录</a>
+                <button id="themeToggle" class="theme-toggle">🌙</button>
+            </div>
+        </div>
+
+        <div class="profile-content">
+            <div class="profile-sidebar">
+                <div class="avatar-section">
+                    <div class="avatar-wrapper">
+                        <img src="<%= user.avatar %>" alt="头像" id="avatarPreview" class="avatar-img" onerror="this.src='/avatar/default.png'">
+                        <div class="edit-overlay" id="editAvatarBtn">
+                            <label for="avatarInput">
+                                <svg viewBox="0 0 24 24" width="24" height="24">
+                                    <path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </label>
+                            <input type="file" id="avatarInput" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+                    <h3 class="username"><%= user.username %></h3>
+                </div>
+
+                <div class="profile-section chat-section">
+                    <div class="section-header">
+                        <h3>开始聊天</h3>
+                    </div>
+                    <div class="chat-form">
+                        <div class="chat-inputs">
+                            <div class="input-group">
+                                <input type="text" id="roomId" placeholder="房间ID">
+                            </div>
+                            <div class="input-group">
+                                <input type="password" id="roomPassword" placeholder="房间密码">
+                            </div>
+                        </div>
+                        <button onclick="joinRoom()" class="enter-btn">进入</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-main">
+                <div class="profile-section">
+                    <div class="section-header">
+                        <h3>个人信息</h3>
+                        <button type="button" class="edit-btn" id="editProfileBtn">编辑</button>
+                    </div>
+                    
+                    <div id="profileInfo">
+                        <!-- 显示模式 -->
+                        <div id="displayMode">
+                            <div class="user-info">
+                                <p>昵称：<span id="displayNickname"><%= user.nickname %></span></p>
+                                <p>性别：<span id="displayGender">
+                                    <%= user.gender === 'male' ? '男' : (user.gender === 'female' ? '女' : '其他') %>
+                                </span></p>
+                                <p>城市：<span id="displayCity"><%= user.city %></span></p>
+                                <p>邮箱：<span id="displayEmail"><%= user.email %></span></p>
+                                <div class="bio-section">
+                                    <h3>个人简介：</h3>
+                                    <div class="bio-content">
+                                        <%- user.parsedBio || '<p>这个人很懒，什么都没写~</p>' %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 编辑模式 -->
+                        <form id="profileForm" class="profile-form" style="display: none;">
+                            <div class="form-group">
+                                <label>昵称</label>
+                                <input type="text" name="nickname" value="<%= user.nickname %>" placeholder="设置昵称">
+                            </div>
+                            <div class="form-group">
+                                <label>性别</label>
+                                <select name="gender">
+                                    <option value="male" <%= user.gender === 'male' ? 'selected' : '' %>>男</option>
+                                    <option value="female" <%= user.gender === 'female' ? 'selected' : '' %>>女</option>
+                                    <option value="other" <%= user.gender === 'other' ? 'selected' : '' %>>其他</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>城市</label>
+                                <input type="text" name="city" value="<%= user.city %>" placeholder="所在城市">
+                            </div>
+                            <div class="form-group">
+                                <label>邮箱</label>
+                                <input type="email" name="email" value="<%= user.email %>" placeholder="设置邮箱">
+                            </div>
+                            <div class="form-group">
+                                <label>个人简介</label>
+                                <textarea name="bio" id="bioEditor" rows="5" placeholder="支持 Markdown 语法，可以使用任务列表、表格、代码块等功能"><%= user.bio || '' %></textarea>
+                            </div>
+                            <div class="form-buttons">
+                                <button type="submit" class="btn save-btn">保存</button>
+                                <button type="button" class="btn cancel-btn" id="cancelEditBtn">取消</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <div class="section-header">
+                        <h3>修改密码</h3>
+                        <button type="button" class="edit-btn" id="changePasswordBtn">修改</button>
+                    </div>
+                    
+                    <form id="changePasswordForm" style="display: none;">
+                        <div></br></div>
+                        <div class="form-group">
+                            <label>当前密码</label>
+                            <input type="password" name="currentPassword" placeholder="请输入当前密码" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">新密码</label>
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" placeholder="至少8个字符，包含大小写字母和数字" required>
+                            <div id="passwordError" class="alert alert-danger" style="display: none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>确认新密码</label>
+                            <input type="password" name="confirmPassword" placeholder="请再次输入新密码" required>
+                        </div>
+                        <div class="form-buttons">
+                            <button type="submit" class="btn save-btn">保存</button>
+                            <button type="button" class="btn cancel-btn" id="cancelPasswordBtn">取消</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="profile-section">
+                    <div class="section-header">
+                        <h3>我的房间</h3>
+                    </div>
+                    <div class="room-table-container">
+                        <table class="room-table">
+                            <thead>
+                                <tr>
+                                    <th class="fixed-column">房间ID</th>
+                                    <th>名称</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="myRoomsList">
+                                <!-- 房间列表将通过 JavaScript 动态加载 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/emoji-toolkit@7.0.0/lib/js/joypixels.min.js"></script>
+    <script src="/js/profile.js"></script>
+
+    <!-- 在 body 结束标签前添加模态框 -->
+    <div id="editRoomModal" class="modal" style="display: none;">
+        <div class="modal-content draggable">
+            <div class="modal-header">
+                <h3 class="modal-title">编辑房间</h3>
+                <div class="modal-actions">
+                    <button type="submit" form="editRoomForm" class="btn save-btn">保存</button>
+                    <button type="button" class="btn cancel-btn" onclick="closeEditModal()">取消</button>
+                </div>
+            </div>
+            <form id="editRoomForm">
+                <div class="form-group">
+                    <label>房间ID</label>
+                    <input type="text" id="editRoomId" disabled>
+                </div>
+                <div class="form-group">
+                    <label>房间名称</label>
+                    <input type="text" name="name" id="editRoomName" required>
+                </div>
+                <div class="form-group">
+                    <label>房间密码</label>
+                    <input type="password" name="password" id="editRoomPassword" placeholder="留空表示不修改密码">
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-wrapper">
+                        <div class="checkbox-group">
+                            <input type="checkbox" name="saveMessages" id="editSaveMessages">
+                            <label for="editSaveMessages">保存聊天记录</label>
+                        </div>
+                        <div class="help-text">启用后保存该房间的所有聊天记录</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>房间描述</label>
+                    <textarea name="description" id="editRoomDescription" rows="5" placeholder="支持 Markdown 语法，可以使用任务列表、表格、代码块等功能"></textarea>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="footer">
+        <p>© <%= new Date().getFullYear() %> ChatterSpire. All rights reserved.</p>
+    </div> 
+</body>
+</html>
+

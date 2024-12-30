@@ -1,0 +1,1111 @@
+:root {
+    --bg-color: #e0eee0;
+    --text-color: #333333;
+    --header-color: #2c3e50;
+    --section-bg: #ffffff;
+    --border-color: #e0e0e0;
+    --input-bg: #ffffff;
+    --input-border: #bdc3c7;
+    --button-bg: #3498db;
+    --button-hover: #2980b9;
+    --cancel-button-bg: #95a5a6;
+    --cancel-button-hover: #7f8c8d;
+    --label-color: #7f8c8d;
+    --value-color: #2c3e50;
+  }
+  
+  .dark-theme {
+    --bg-color: #2c3e50;
+    --text-color: #ecf0f1;
+    --header-color: #ecf0f1;
+    --section-bg: #34495e;
+    --border-color: #4a6278;
+    --input-bg: #2c3e50;
+    --input-border: #4a6278;
+    --button-bg: #2980b9;
+    --button-hover: #3498db;
+    --cancel-button-bg: #7f8c8d;
+    --cancel-button-hover: #95a5a6;
+    --label-color: #ecf0f1;
+    --value-color: #ecf0f1;
+  }
+  
+  body {
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .profile-container {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .profile-header h2 {
+    color: #9400D3;
+    font-size: 2rem;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 10px;
+    margin: 0;
+  }
+  
+  .profile-header h2::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    height: 2px;
+    background-color: #00FF00;
+  }
+  
+  .header-actions {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .admin-btn, .logout-btn {
+    padding: 8px 16px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+  }
+  
+  .admin-btn {
+    background: var(--button-bg);
+    color: white;
+  }
+  
+  .logout-btn {
+    background: #e74c3c;
+    color: white;
+  }
+  
+  .admin-btn:hover {
+    background: var(--button-hover);
+  }
+  
+  .logout-btn:hover {
+    background: #c0392b;
+  }
+  
+  .theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: var(--text-color);
+  }
+  
+  .profile-content {
+    display: flex;
+    gap: 2rem;
+  }
+  
+  .profile-sidebar {
+    flex: 1;
+    min-width: 250px;
+  }
+  
+  .profile-main {
+    flex: 2;
+    min-width: 300px;
+  }
+  
+  .profile-section {
+    background: var(--section-bg);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .section-header h3 {
+    color: #c7189b;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .edit-btn {
+    background: var(--button-bg);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .edit-btn:hover {
+    background: var(--button-hover);
+  }
+  
+  .avatar-section {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .avatar-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .avatar-img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--button-bg);
+  }
+  
+  .edit-overlay {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: rgba(52, 152, 219, 0.8);
+    border-radius: 50%;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  
+  .edit-overlay:hover {
+    background: rgba(52, 152, 219, 1);
+  }
+  
+  .username.username {
+    margin-top: 1rem;
+    font-size: 1.5rem;
+    color: #BA55D3;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--label-color);
+    font-weight: 600;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 50%;
+    padding: 0.8rem;
+    border: 1px solid var(--input-border);
+    border-radius: 5px;
+    font-size: 1rem;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    transition: border-color 0.3s;
+  }
+  
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: var(--button-bg);
+    outline: none;
+  }
+  
+  .btn {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 1rem;
+  }
+  
+  .save-btn {
+    background: var(--button-bg);
+    color: white;
+  }
+  
+  .save-btn:hover {
+    background: var(--button-hover);
+  }
+  
+  .cancel-btn {
+    background: var(--cancel-button-bg);
+    color: white;
+  }
+  
+  .cancel-btn:hover {
+    background: var(--cancel-button-hover);
+  }
+  
+  .chat-form {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .chat-inputs {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+  }
+  
+  .input-group {
+    flex: 1;
+  }
+  
+  .input-group input {
+    width: 90%;
+    padding: 0.8rem;
+    border: 1px solid #2ecc71;
+    /*border: 1px solid var(--input-border);*/
+    border-radius: 5px;
+    font-size: 1rem;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+  }
+  
+  .enter-btn {
+    background: var(--button-bg);
+    color: white;
+    border: none;
+    padding: 0 1.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .enter-btn:hover {
+    background: var(--button-hover);
+  }
+  
+  .info-row {
+    margin-bottom: 1rem;
+  }
+  
+  .info-group {
+    display: flex;
+    align-items: baseline;
+  }
+  
+  .info-label {
+    min-width: 80px;
+    font-weight: 600;
+    color: var(--label-color);
+  }
+  
+  .info-value {
+    color: var(--value-color);
+  }
+  
+  .bio-content {
+    background-color: var(--input-bg);
+    /*border: 1px solid var(--input-border);*/
+    border: 1px solid #2ecc71;
+    border-radius: 5px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+  }
+  
+  @media (max-width: 768px) {
+    .profile-content {
+      flex-direction: column;
+    }
+  
+    .profile-sidebar,
+    .profile-main {
+      width: 100%;
+    }
+  
+    .chat-form {
+      flex-direction: column;
+    }
+  
+    .chat-inputs {
+      flex-direction: column;
+    }
+  
+    .enter-btn {
+      width: 100%;
+      height: 38px;
+      margin-top: 0rem;
+    }
+    .profile-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .header-actions {
+      margin-top: 15px;
+    }
+  }
+  
+  .my-rooms-card {
+    margin-top: 2rem;
+  }
+  
+  .my-rooms-card .btn {
+    margin-right: 0.5rem;
+  }
+  
+  .my-rooms-card .table {
+    margin-bottom: 0;
+  }
+  
+  .my-rooms-card .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  /* 模态框样式 */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    position: relative;
+    width: 500px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transform: none;
+    top: auto;
+    left: auto;
+  }
+  
+  .modal-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+  }
+  
+  .modal-title {
+    color: #c7189b;  /* 深灰色 */
+    font-color: #c7189b;
+    font-size: 24px;  /* 字体大小 */
+    font-weight: 600;  /* 加粗 */
+    font-family: "Microsoft YaHei", "微雅黑", sans-serif;  /* 宋体 */
+    margin: 0;
+    padding: 0;
+  }
+  
+  .modal-content form {
+    padding: 24px;
+  }
+  
+  /* 表单样式 */
+  .modal-content .form-group {
+    margin-bottom: 16px;
+  }
+  
+  .modal-content .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: normal;
+  }
+  
+  .modal-content .form-group input,
+  .modal-content .form-group textarea {
+    width: 100%;
+    max-width: 450px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+  
+  .modal-content .form-group input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+  }
+  
+  /* 复选框组样式 */
+  .modal-content .checkbox-wrapper {
+    margin-bottom: 16px;
+  }
+  
+  .modal-content .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  
+  .modal-content .checkbox-group input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+  }
+  
+  .modal-content .checkbox-group label {
+    margin: 0;
+    font-weight: normal;
+    display: inline;
+  }
+  
+  .modal-content .help-text {
+    margin-left: 24px;
+    color: #666;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  
+  /* 按���样式 */
+  .modal-content .modal-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .modal-content .btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .modal-content .save-btn {
+    background-color: #3498db;
+    color: white;
+  }
+  
+  .modal-content .cancel-btn {
+    background-color: #95a5a6;
+    color: white;
+  }
+  
+  /* 房间表格样式 */
+  .room-table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+    margin-bottom: 1rem;
+  }
+  
+  .room-table {
+    width: 100%;
+    min-width: 600px;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  
+  .room-table th,
+  .room-table td {
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .room-table th {
+    background-color: #f8f9fa;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .room-table tr:hover {
+    background-color: var(--hover-color);
+  }
+  
+  /* 操作按钮样式 */
+  .room-table .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    margin-right: 0.5rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .room-table .btn-primary {
+    background-color: #3498db;
+    color: white;
+  }
+  
+  .room-table .btn-warning {
+    background-color: #f1c40f;
+    color: white;
+  }
+  
+  .room-table .btn-success {
+    background-color: #2ecc71;
+    color: white;
+  }
+  
+  .room-table .btn-danger {
+    background-color: #e74c3c;
+    color: white;
+  }
+  
+  .room-table .btn-secondary {
+    background-color: #95a5a6;
+    color: white;
+  }
+  
+  .room-table .btn-sm:hover {
+    opacity: 0.9;
+  }
+  
+  /* 深色主题适配 */
+  .dark-theme .room-table th {
+    background-color: var(--section-bg);
+  }
+  
+  .dark-theme .room-table tr:hover {
+    background-color: var(--hover-color);
+  }
+  
+  /* 模态框样式优化 */
+  .modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    padding: 0;
+    border-radius: 8px;
+  }
+  
+  .modal-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+  }
+  
+  .modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text-color);
+  }
+  
+  .modal-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .modal-content form {
+    padding: 1rem;
+  }
+  
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  
+  .checkbox-group input[type="checkbox"] {
+    width: auto;
+  }
+  
+  /* 深色主题适配 */
+  .dark-theme .fixed-column {
+    background-color: var(--section-bg);
+  }
+  
+  /* 表格列宽调整 */
+  .room-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  
+  .room-table th,
+  .room-table td {
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .room-table th {
+    background-color: #f8f9fa;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  /* 列宽调整 */
+  .room-table th.fixed-column,
+  .room-table td.fixed-column {
+    width: 100px;
+    position: sticky;
+    left: 0;
+    background-color: inherit;
+    z-index: 1;
+  }
+  
+  .room-table th:nth-child(2),
+  .room-table td:nth-child(2) {
+    width: 100px;
+  }
+  
+  .room-table th:nth-child(3),
+  .room-table td:nth-child(3) {
+    width: 80px;
+  }
+  
+  .room-table th:nth-child(4),
+  .room-table td:nth-child(4) {
+    width: 300px;
+  }
+  
+  /* 确保在移动端背景色正确 */
+  .room-table td.fixed-column {
+    background-color: var(--section-bg);
+  }
+  
+  .room-table tr:hover td.fixed-column {
+    background-color: var(--hover-color);
+  }
+  
+  /* 编辑模态框样式优化 */
+  .modal-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #f8f9fa;
+  }
+  
+  .modal-title {
+    color: #8a2be2;  /* 紫色 */
+    font-size: 16px;
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .modal-content {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .modal-content form {
+    padding: 24px;
+  }
+  
+  /* 复选框组样式 */
+  .checkbox-wrapper {
+    margin-bottom: 20px;
+  }
+  
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;  /* 减小与帮助文本的间距 */
+  }
+  
+  .checkbox-group input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+  }
+  
+  .checkbox-group label {
+    margin: 0;
+    font-weight: normal;
+  }
+  
+  .help-text {
+    margin-left: 24px;  /* 与复选框对齐 */
+    color: #666;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  
+  /* 表单组样式 */
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: normal;
+  }
+  
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .form-group input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+  }
+  
+  /* 个人信息表单样式 */
+  #profileForm .form-group {
+    margin-bottom: 20px;
+  }
+  
+  #profileForm .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--label-color);
+    font-weight: 600;
+  }
+  
+  /* 统一所有输入框样式 */
+  #profileForm .form-group input,
+  #profileForm .form-group select,
+  #profileForm .form-group textarea {
+    width: 90%;  /* 统一宽度 */
+    padding: 8px 12px;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+  }
+  
+  /* 表格状态列样式 */
+  .room-table th:nth-child(3),
+  .room-table td:nth-child(3) {
+    width: 100px;
+    text-align: center;  /* 居中对齐 */
+    vertical-align: middle;  /* 垂直居中 */
+  }
+  
+  /* 状态标签样式 */
+  .status-badge {
+    display: inline-block;
+    padding: 4px 12px;  /* 调整内边距 */
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: normal;
+    text-align: center;
+    min-width: 60px;  /* 设置最小宽度确保对齐 */
+  }
+  
+  .status-active {
+    background-color: #dff0d8;
+    color: #3c763d;
+    border: 1px solid #d6e9c6;
+  }
+  
+  .status-disabled {
+    background-color: #f2dede;
+    color: #a94442;
+    border: 1px solid #ebccd1;
+  }
+  
+  /* 个人信息标签样式 */
+  .profile-section h3 {
+    color: #c7189b;  /* 与"个人信息"标题相同的颜色 */
+    font-size: 16px;
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #666;  /* 标签颜色 */
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  /* 个人简介标题样式 */
+  .bio-section h3 {
+    color: #666;  /* 其他标签相同的颜色 */
+    font-size: 14px;
+    font-weight: normal;
+    margin-bottom: 8px;
+  }
+  
+  /* 输入框和文本框样式 */
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 90%;
+    padding: 8px 12px;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: var(--input-bg);
+    color: #333;  /* 输入内容的颜色 */
+  }
+  
+  /* 显示模式下的值的样式 */
+  #displayMode .user-info p {
+    margin-bottom: 15px;
+    color: #666;
+  }
+  
+  #displayMode .user-info span {
+    color: #333;  /* 显示内容的颜色 */
+    font-size: 14px;
+  }
+  
+  #displayMode .user-info p label {
+    display: inline-block;
+    width: 70px;  /* 固定标签宽度 */
+    color: #666;  /* 标签颜色 */
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  /* 复制主要标题的样式 */
+  .section-header h3 {
+    color: #c7189b;  /* 原来的紫色 */
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  /* 编辑模态框标题样式 - 与主标题保持一致 */
+  .modal-header .modal-title {
+    color: #c7189b;  /* 与主标题相同的颜色 */
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* 个人信息表单中的标签样式 */
+  #displayMode .user-info p label {
+    display: inline-block;
+    width: 70px;
+    color: #666;
+    font-size: 14px;
+    font-weight: normal;
+  }
+  
+  /* 个人信息表单中的值的样式 */
+  #displayMode .user-info span {
+    color: #333;
+    font-size: 14px;
+  }
+  
+  /* 移动端模态框样式 */
+  @media (max-width: 768px) {
+    .modal-content {
+        width: 90%;  /* 设置为屏幕宽度的90% */
+        max-width: 400px;  /* 设置最大宽度 */
+        margin: 0 auto;  /* 水平居中 */
+    }
+
+    .modal-content form {
+        padding: 15px;  /* 减小内边距 */
+    }
+
+    .modal-header {
+        padding: 12px 15px;  /* 减小头部内边距 */
+    }
+
+    .modal-content .form-group input,
+    .modal-content .form-group textarea {
+        width: 100%;  /* 输入框占满容器宽度 */
+        max-width: none;  /* 移除最大宽度限制 */
+    }
+
+    /* 确保按钮在移动端也有合适的大小 */
+    .modal-content .btn {
+        padding: 8px 15px;
+        font-size: 14px;
+    }
+
+    /* 调整复选框组在移动端的样式 */
+    .checkbox-wrapper {
+        margin-bottom: 15px;
+    }
+
+    .help-text {
+        margin-left: 20px;
+        font-size: 12px;
+    }
+  }
+  
+  /* 暗色主题下的模态框样式 */
+  .dark-theme .modal-content {
+    background-color: #2c3e50;  /* 深色背景 */
+    color: #ecf0f1;  /* 浅色文字 */
+  }
+  
+  .dark-theme .modal-header {
+    background-color: #34495e;  /* 稍浅一点的深色背景 */
+    border-bottom-color: #4a6278;  /* 深色边框 */
+  }
+  
+  .dark-theme .modal-title {
+    color: #ecf0f1;  /* 浅色文字 */
+  }
+  
+  .dark-theme .modal-content .form-group label {
+    color: #bdc3c7;  /* 浅灰色标签 */
+  }
+  
+  .dark-theme .modal-content .form-group input,
+  .dark-theme .modal-content .form-group textarea {
+    background-color: #34495e;  /* 输入框深色背景 */
+    border-color: #4a6278;  /* 深色边框 */
+    color: #ecf0f1;  /* 浅色文字 */
+  }
+  
+  .dark-theme .modal-content .form-group input:disabled {
+    background-color: #2c3e50;  /* 禁用输入框更深的背景色 */
+    color: #95a5a6;  /* 禁用文字颜色 */
+  }
+  
+  .dark-theme .modal-content .help-text {
+    color: #95a5a6;  /* 帮助文本颜色 */
+  }
+  
+  .dark-theme .modal-content .checkbox-group label {
+    color: #bdc3c7;  /* 复选框标签颜色 */
+  }
+  
+  /* 暗色主题下的文本颜色调整 */
+  .dark-theme .username {
+    color: #ecf0f1;
+  }
+  
+  .dark-theme .section-header h3 {
+    color: #3498db;  /* 使用亮蓝色 */
+  }
+  
+  .dark-theme .profile-section {
+    background: var(--section-bg);
+    border: 1px solid var(--border-color);
+  }
+  
+  .dark-theme .form-group label {
+    color: #bdc3c7;  /* 浅灰色 */
+  }
+  
+  .dark-theme #displayMode .user-info p label {
+    color: #bdc3c7;  /* 浅灰色 */
+  }
+  
+  .dark-theme #displayMode .user-info span {
+    color: #ecf0f1;  /* 纯白色 */
+  }
+  
+  .dark-theme .bio-content {
+    background-color: #2c3e50;
+    border: 1px solid #3498db;  /* 使用亮蓝色边框 */
+    color: #f4f7f8;
+  }
+  
+  .dark-theme .form-group input,
+  .dark-theme .form-group select,
+  .dark-theme .form-group textarea {
+    background-color: #2c3e50;
+    border-color: #4a6278;
+    color: #ecf0f1;
+  }
+  
+  /* 状态标签在暗色主题下的样式 */
+  .dark-theme .status-active {
+    background-color: #27ae60;  /* 深绿色背景 */
+    color: #ecf0f1;  /* 白色文字 */
+    border-color: #2ecc71;
+  }
+  
+  .dark-theme .status-disabled {
+    background-color: #c0392b;  /* 深红色背景 */
+    color: #ecf0f1;  /* 白色文字 */
+    border-color: #e74c3c;
+  }
+  
+  /* 表格在暗色主题下的样式 */
+  .dark-theme .room-table th {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    border-bottom: 1px solid #4a6278;
+  }
+  
+  .dark-theme .room-table td {
+    border-bottom: 1px solid #4a6278;
+    color: #ecf0f1;
+  }
+  
+  .dark-theme .room-table tr:hover {
+    background-color: #2c3e50;
+  }
+  
+  /* 密码错误提示样式 */
+  .alert-danger {
+    padding: 10px;
+    width: 70%;
+    margin-top: 5px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  
+  /* 亮色主题 */
+  body .alert-danger {
+    color: #dc3545;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+  }
+  
+  /* 暗色主题 */
+  body.dark-theme .alert-danger {
+    color: #ff6b6b;
+    background-color: #2c1f21;
+    border: 1px solid #3d2a2c;
+  }
+
+  /* 底部样式 */
+  .footer {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  

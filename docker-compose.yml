@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/chatterspire
+      - SESSION_SECRET=your_secret_key
+      - NODE_ENV=production
+    volumes:
+      - ./public/upload:/app/public/upload
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    networks:
+      - chatterspire-network
+
+  mongo:
+    image: mongo:latest
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    restart: unless-stopped
+    command: mongod --bind_ip_all
+    networks:
+      - chatterspire-network
+
+networks:
+  chatterspire-network:
+    driver: bridge
+
+volumes:
+  mongodb_data: 

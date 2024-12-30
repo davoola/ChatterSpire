@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>ChatterSpire | 注册</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/auth.css">
+    <script src="/core/theme-manager.js" defer></script>
+</head>
+<body>
+    <button id="themeToggle" class="theme-toggle">🌙</button>
+    <div class="container">
+        <h2>加入 ChatterSpire</h2>
+        <p class="subtitle">请填写以下信息完成注册</p>
+        <div class="error" id="errorMsg"></div>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" placeholder="请设置用户名" required>
+                <span class="input-icon">👤</span>
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="至少8个字符，包含大小写字母和数字" required>
+                <div id="passwordError" class="alert alert-danger" style="display: none;"></div>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">确认密码</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="请再次输入密码" required>
+                <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                    👁️
+                </button>
+            </div>
+            <button type="submit" class="btn">注册</button>
+        </form>
+        <p class="link-text">已有账号？<a href="/login">立即登录</a></p>
+        <div class="index-features">
+            <div class="index-feature">
+                <div class="index-feature-icon">📹</div>
+                <div>视频聊天</div>
+            </div>
+            <div class="index-feature">
+                <div class="index-feature-icon">💬</div>
+                <div>文字聊天</div>
+            </div>
+            <div class="index-feature">
+                <div class="index-feature-icon">🔒</div>
+                <div>安全房间</div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>© <%= new Date().getFullYear() %> ChatterSpire. All rights reserved.</p>
+        </div> 
+    </div>
+
+    <script src="/js/reg.js"></script>
+</body>
+</html>
+

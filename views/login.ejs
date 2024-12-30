@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>ChatterSpire | 登录</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/auth.css">
+    <script src="/core/theme-manager.js"></script>
+</head>
+<body>
+    <button id="themeToggle" class="theme-toggle">🌙</button>
+    <div class="container">
+        <h2>欢迎来到 ChatterSpire</h2>
+        <p class="subtitle">请登录您的账号继续访问</p>
+        <div class="error" id="errorMsg"></div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" placeholder="请输入用户名" required>
+                <span class="input-icon">👤</span>
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" placeholder="请输入密码" required>
+                <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                    👁️
+                </button>
+            </div>
+            <button type="submit" class="btn">登录</button>
+        </form>
+        <p class="link-text">还没有账号？<a href="/register">立即注册</a></p>
+        <div class="index-features">
+            <div class="index-feature">
+                <div class="index-feature-icon">📹</div>
+                <div>视频聊天</div>
+            </div>
+            <div class="index-feature">
+                <div class="index-feature-icon">💬</div>
+                <div>文字聊天</div>
+            </div>
+            <div class="index-feature">
+                <div class="index-feature-icon">🔒</div>
+                <div>安全房间</div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>© <%= new Date().getFullYear() %> ChatterSpire. All rights reserved.</p>
+        </div> 
+    </div>
+
+    <script src="/js/login.js"></script>
+</body>
+</html>
+

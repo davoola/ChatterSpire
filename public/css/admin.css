@@ -1,0 +1,705 @@
+/* Admin Console Styles */
+
+:root {
+    --bg-color: #e0eee0;
+    --text-color: #333333;
+    --header-color: #9400D3;
+    --section-bg: #ffffff;
+    --section-border: #e0e0e0;
+    --input-bg: #ffffff;
+    --input-border: #bdc3c7;
+    --btn-primary: #3498db;
+    --btn-primary-hover: #2980b9;
+    --btn-secondary: #95a5a6;
+    --btn-secondary-hover: #7f8c8d;
+    --btn-add: #B22222;
+    --btn-add-hover: #8B0000;
+    --label-color: #7f8c8d;
+    --value-color: #2c3e50;
+  }
+  
+  .dark-theme {
+    --bg-color: #2c3e50;
+    --text-color: #ecf0f1;
+    --header-color: #9b59b6;
+    --section-bg: #34495e;
+    --section-border: #4a6278;
+    --input-bg: #2c3e50;
+    --input-border: #4a6278;
+    --btn-primary: #2980b9;
+    --btn-primary-hover: #3498db;
+    --btn-secondary: #7f8c8d;
+    --btn-secondary-hover: #95a5a6;
+    --btn-add: #e74c3c;
+    --btn-add-hover: #c0392b;
+    --label-color: #bdc3c7;
+    --value-color: #ecf0f1;
+  }
+  
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .profile-header h2 {
+    color: var(--header-color);
+    font-size: 2rem;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 10px;
+  }
+  
+  .profile-header h2::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    height: 2px;
+    background-color: #00FF00;
+  }
+  
+  .header-actions {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .return-btn, .logout-btn {
+    padding: 8px 16px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+  }
+  
+  .return-btn {
+    background: var(--btn-primary);
+    color: white;
+  }
+  
+  .logout-btn {
+    background: #e74c3c;
+    color: white;
+  }
+  
+  .return-btn:hover {
+    background: var(--btn-primary-hover);
+  }
+  
+  .logout-btn:hover {
+    background: #c0392b;
+  }
+  
+  .admin-section {
+    background: var(--section-bg);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--section-border);
+  }
+  
+  .admin-nav {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .nav-btn {
+    padding: 10px 20px;
+    background: var(--btn-secondary);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .nav-btn.active, .nav-btn:hover {
+    background: var(--btn-secondary-hover);
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .info-header {
+    display: flex;
+    align-items: center;
+  }
+  
+  .info-header h3 {
+    color: var(--header-color);
+    font-size: 1.5rem;
+    margin: 0;
+    margin-right: 20px;
+  }
+  
+  .action-btn {
+    padding: 8px 16px;
+    background: var(--btn-primary);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .action-btn:hover {
+    background: var(--btn-primary-hover);
+  }
+  
+  .action-btn.add {
+    background-color: var(--btn-add);
+    color: white;
+  }
+  
+  .action-btn.add:hover {
+    background-color: var(--btn-add-hover);
+  }
+  
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    white-space: nowrap;  /* 防止内容换行 */
+  }
+  
+  .admin-table th, .admin-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--section-border);
+    min-width: 50px;  /* 设置最小宽度 */
+  }
+  
+  .admin-table th {
+    background-color: var(--section-bg);
+    color: var(--text-color);
+    font-weight: 600;
+  }
+  
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 500;
+  }
+  
+  .status-badge.active {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .status-badge.disabled {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+  
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  
+  .modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--section-bg);
+    padding: 20px;
+    border-radius: 10px;
+    width: 50%;
+    max-width: 500px;
+    color: var(--text-color);
+    cursor: move;
+    user-select: none;
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .modal-content.dragging {
+    opacity: 0.8;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  .modal-header {
+    padding: 10px 0;
+    cursor: move;
+    margin-bottom: 15px;
+    position: relative;
+  }
+  
+  .modal-header h2 {
+    margin: 0;
+    color: var(--header-color);
+  }
+  
+  .close-btn {
+    position: absolute;
+    right: 0;
+    top: 0;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0 5px;
+  }
+  
+  .close-btn:hover {
+    color: var(--text-color);
+  }
+  
+  .form-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+  }
+  
+  .form-buttons button {
+    min-width: 80px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--label-color);
+    white-space: nowrap; /* 禁止文本换行 */
+  }
+  
+  .form-group input, .form-group select, .form-group textarea {
+    width: 95%;
+    padding: 8px;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border-color: var(--input-border);
+  }
+  
+  /* 复选框 */
+  .checkbox-line {
+    display: flex;
+    align-items: center;
+  }
+  
+  .checkbox-line input[type="checkbox"] {
+    margin-right: 0.5rem;
+  }
+  
+  .checkbox-line label {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .help-text {
+    margin-left: 25px;
+    margin-top: 5px;
+    color: #666;
+    font-size: 13px;
+  }
+  
+  .markdown-editor {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .editor-pane, .preview-pane {
+    flex: 1;
+    min-height: 200px;
+  }
+  
+  .editor-pane textarea {
+    width: 100%;
+    height: 200px;
+    resize: vertical;
+  }
+  
+  .preview-pane {
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    padding: 10px;
+    overflow-y: auto;
+  }
+  
+  .theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: var(--text-color);
+    margin-left: 15px;
+  }
+  
+  @media (max-width: 768px) {
+    .admin-container {
+      padding: 10px;
+    }
+  
+    .profile-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .header-actions {
+      margin-top: 10px;
+    }
+  
+    .admin-nav {
+      flex-wrap: wrap;
+    }
+  
+    .modal-content {
+      width: 90%;
+    }
+  
+    .markdown-editor {
+      flex-direction: column;
+    }
+  }
+  
+  /* 表格容器样式 */
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    position: relative;
+  }
+  
+  /* 固定头像列 */
+  .admin-table th:first-child,
+  .admin-table td:first-child {
+    position: sticky;
+    left: 0;
+    background-color: var(--section-bg);
+    z-index: 1;
+    /* 添加阴影效果区分固定列 */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* 特定列的宽度控制 */
+  .admin-table .avatar-column {
+    width: 60px;
+    min-width: 60px;
+  }
+  
+  .admin-table .username-column {
+    min-width: 80px;
+  }
+  
+  .admin-table .nickname-column {
+    min-width: 60px;
+  }
+  
+  .admin-table .timestamp-column {
+    min-width: 150px;
+  }
+  
+  .admin-table .actions-column {
+    min-width: 200px;
+  }
+  
+  /* 滚动条样式优化 */
+  .table-container::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  .table-container::-webkit-scrollbar-track {
+    background: var(--section-bg);
+  }
+  
+  .table-container::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+  
+  .table-container::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+  }
+  
+  /* 移动端适配 */
+  @media (max-width: 768px) {
+    .table-container {
+      margin: 0 -10px;  /* 抵消父容器的内边距 */
+      padding: 0 10px;
+    }
+    
+    .admin-table th, 
+    .admin-table td {
+      padding: 8px;  /* 减小内边距 */
+    }
+    
+    /* 添加横向滚动提示 */
+    .table-container::after {
+      content: '← 左右滑动查看更多 →';
+      display: block;
+      text-align: center;
+      padding: 5px;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+    }
+  }
+  
+  /* 表格样式 */
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .table th,
+  .table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+  }
+  
+  .table th {
+    background-color: var(--header-bg);
+    font-weight: 600;
+    color: var(--text-color);
+  }
+  
+  /* 状态标签样式 */
+  .status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  
+  .status-active {
+    background-color: #e6f4ea;
+    color: #1e7e34;
+    border: 1px solid #a3cfbb;
+  }
+  
+  .status-disabled {
+    background-color: #fbe9e7;
+    color: #d32f2f;
+    border: 1px solid #ffcdd2;
+  }
+  
+  /* 操作按钮样式 */
+  .actions-column {
+    white-space: nowrap;
+    min-width: 200px;
+  }
+  
+  .btn {
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 0 2px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-sm {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+  
+  .btn-primary {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #0056b3;
+  }
+  
+  .btn-warning {
+    background-color: #ffc107;
+    color: #000;
+  }
+  
+  .btn-warning:hover {
+    background-color: #d39e00;
+  }
+  
+  .btn-success {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .btn-success:hover {
+    background-color: #218838;
+  }
+  
+  .btn-danger {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  .btn-danger:hover {
+    background-color: #c82333;
+  }
+  
+  .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #5a6268;
+  }
+  
+  /* 头像列样式 */
+  .avatar-column {
+    width: 50px;
+  }
+  
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  /* 列宽度控制 */
+  .username-column,
+  .nickname-column {
+    min-width: 120px;
+  }
+  
+  .role-column {
+    min-width: 80px;
+  }
+  
+  .timestamp-column {
+    min-width: 160px;
+  }
+  
+  .status-column {
+    min-width: 80px;
+    text-align: center;
+  }
+  
+  .room-id-column {
+    min-width: 100px;
+  }
+  
+  .name-column {
+    min-width: 150px;
+  }
+  
+  .creator-column {
+    min-width: 120px;
+  }
+  
+  .password-column,
+  .save-column {
+    min-width: 60px;
+    text-align: center;
+  }
+  
+  /* 管理界面容器 */
+  .admin-container {
+    padding: 20px;
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* 标题和添加按钮区域 */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+  
+  /* 暗色主题适配 */
+  .dark-theme .table {
+    background-color: var(--dark-bg);
+  }
+  
+  .dark-theme .table th {
+    background-color: var(--dark-header-bg);
+  }
+  
+  .dark-theme .status-active {
+    background-color: rgba(30, 126, 52, 0.2);
+    color: #4caf50;
+    border-color: #4caf50;
+  }
+  
+  .dark-theme .status-disabled {
+    background-color: rgba(211, 47, 47, 0.2);
+    color: #f44336;
+    border-color: #f44336;
+  }
+  
+  /* 响应式调整 */
+  @media (max-width: 768px) {
+    .table {
+      display: block;
+      overflow-x: auto;
+    }
+    
+    .btn-sm {
+      padding: 3px 6px;
+      font-size: 0.75rem;
+    }
+    
+    .actions-column {
+      min-width: 160px;
+    }
+  }
+
+  /* 底部样式 */
+  .footer {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 14px;
+    color: #666;
+  }

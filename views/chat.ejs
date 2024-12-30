@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ChatterSpire | <%= roomId %></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/markdown-it-texmath/css/texmath.min.css">
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/chat.css">
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.2/dist/markdown-it.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it-texmath@1.0.0/texmath.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it-task-lists@2.1.1/dist/markdown-it-task-lists.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.17.1/flowchart.min.js"></script>
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin>
+    <script src="/core/theme-manager.js"></script>
+</head>
+<body>
+    <div class="chat-layout">
+        <!-- 左侧悬停区域 -->
+        <div class="left-sidebar-hover-area"></div>
+        
+        <!-- 左侧用户信息菜单 -->
+        <div class="sidebar left-sidebar" id="leftSidebar">
+            <div class="sidebar-content">
+                <div class="user-profile" data-user-id="<%= user._id %>">
+                    <img src="<%= user.avatar %>" alt="头像" class="user-avatar" onerror="this.src='/avatar/default.png'">
+                    <h3><%= user.username %></h3>
+                </div>
+                <div class="sidebar-menu">
+                    <% if (user.role === 'admin') { %>
+                        <a href="/admin" class="menu-item">
+                            <span class="menu-icon">⚙️</span>
+                            系统管理
+                        </a>
+                    <% } %>
+                    <a href="/profile" class="menu-item">
+                        <span class="menu-icon">🏠</span>
+                        个人中心
+                    </a>
+                    <a href="/auth/logout" class="menu-item">
+                        <span class="menu-icon">🚪</span>
+                        退出登录
+                    </a>
+                    <a class="menu-item" onclick="toggleTheme()" style="cursor: pointer;">
+                        <span class="menu-icon" id="themeIcon">🌞</span>
+                        <span id="themeText">切换主题</span>
+                    </a>
+                </div>
+            </div>                        
+            <div class="footer">
+                <p>© <%= new Date().getFullYear() %> ChatterSpire. </p>
+            </div>
+        </div>
+
+        <!-- 主聊天区域 -->
+        <div class="main-chat">
+            <div class="room-info">
+                <div class="room-header">
+                    <h2>房间: <%= roomId %></h2>
+                    <div class="online-count">
+                        在线人数: <span id="onlineCount">1</span>
+                        <!--<button id="themeToggle" class="theme-toggle">🌙</button>-->
+                        <button id="headerThemeToggle" class="theme-toggle">🌙</button>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-box" id="chatBox"></div>
+            <div class="input-controls">
+                <div class="controls-row">
+                    <div class="upload-section">
+                        <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">
+                            
+                            <span class="btn-text">上传文件</span>
+                        </button>
+                        <input type="file" id="fileInput" style="display: none;">
+                    </div>
+                    <div class="video-section">
+                        <input type="text" id="videoUrl" class="video-url-input" 
+                               placeholder="输入视频URL (支持MP4/WebM)">
+                        <button class="sync-button btn btn-primary">
+                            同步观看
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="input-area">
+                <textarea id="messageInput" placeholder="输入消息... (Shift + Enter 换行，Enter 发送)"></textarea>
+                <button onclick="sendMessage()">发送</button>
+            </div>
+        </div>
+
+        <!-- 右侧悬停区域 -->
+        <div class="right-sidebar-hover-area"></div>
+        
+        <!-- 右侧房间信息菜单 -->
+        <div class="sidebar right-sidebar" id="rightSidebar">
+            <div class="sidebar-content">
+                <div class="room-info-section">
+                    <h3><%= room.name %></h3>
+                    <div class="room-description markdown-body" id="roomDescription">
+                        <!-- 房间描述将通过 JavaScript 动态渲染 -->
+                    </div>
+                    <!-- 在 chat.ejs 中添加一个隐藏元素存储间描述 -->
+                    <div id="roomDescriptionData" style="display: none;" data-description="<%= room.description || '暂无房间介绍' %>">
+                    </div>
+                </div>
+                <div class="online-users-section">
+                    <h3>在线用户</h3>
+                    <div class="online-users-list" id="onlineUsersList">
+                        <!-- 在线用户列表将通过 JavaScript 动态更新 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
+    <!-- 视频同步播放器容器 -->
+    <div id="syncVideoContainer" class="sync-video-container" style="display: none;">
+        <div class="sync-video-header">
+            <div class="sync-video-title">同步观看</div>
+            <button class="btn btn-secondary" onclick="closeSyncVideo()">关闭</button>
+        </div>
+        <video id="syncVideo" class="sync-video-player" controls></video>
+    </div>
+
+    <!-- 通知容器 -->
+    <div id="notificationContainer" class="notification-container"></div>
+
+    <!-- 图片查看器 -->
+    <div id="lightbox" class="lightbox">
+        <div class="lightbox-content">
+            <img class="lightbox-image" src="" alt="预览图片">
+            <button class="lightbox-prev" aria-label="上一张" type="button">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <button class="lightbox-next" aria-label="下一张" type="button">
+                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </button>
+            <button class="lightbox-close" aria-label="关闭" type="button">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Socket.IO 相关脚本 -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/core/socket-client.js"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- 其他功能脚本 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/emoji-toolkit@7.0.0/lib/js/joypixels.min.js"></script>
+    <script src="/core/code-handler.js"></script>
+    <script src="/core/file-handler.js"></script>
+    <script src="/core/video-player.js"></script>
+    <script src="/js/chat.js"></script>
+
+    <!-- 在现有脚本之前添加 -->
+    <script>
+        // 用户信息初始化（确保所有变量都经过正确的转义）
+        const userGender = '<%= user.gender %>';
+        const userCity = '<%= user.city %>';
+        const userBio = <%- JSON.stringify(user.bio || '') %>;
+        const roomId = '<%= roomId %>';
+        const userId = '<%= user.id %>';
+        const username = '<%= user.username %>';
+        const userAvatar = <%- JSON.stringify(user.avatar || '/avatar/default.png') %>;
+    </script>
+</body>
+</html> 
