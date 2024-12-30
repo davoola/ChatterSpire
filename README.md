@@ -78,8 +78,8 @@ ChatterSpire 是一个功能丰富的实时聊天应用，旨在提供流畅的�
 
 1. 克隆项目
 ```bash
-git clone [项目地址]
-cd ChatRoom
+git clone https://github.com/davoola/ChatterSpire.git
+cd ChatterSpire
 ```
 2. 安装依赖
 ```bash
