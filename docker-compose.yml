@@ -2,7 +2,8 @@ version: '3.8'
 
 services:
   app:
-    image: davoola/chatterhub
+    container_name: chatterspire-app
+    image: davoola/chatterspire
     ports:
       - "3000:3000"
     environment:
@@ -18,6 +19,7 @@ services:
       - chatterspire-network
 
   mongo:
+    container_name: chatterspire-mongo
     image: mongo:latest
     volumes:
       - mongodb_data:/data/db
