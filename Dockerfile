@@ -15,6 +15,8 @@ COPY . .
 
 # 创建上传目录
 RUN mkdir -p public/upload && chmod 777 public/upload
+RUN mkdir -p public/avatar && chmod 777 public/avatar
+RUN mkdir -p records && chmod 777 records
 
 # 添加执行权限到入口脚本
 RUN chmod +x docker-entrypoint.sh

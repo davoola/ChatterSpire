@@ -12,6 +12,8 @@ services:
       - NODE_ENV=production
     volumes:
       - ./public/upload:/app/public/upload
+      - ./public/avatar:/app/public/avatar
+      - ./records:/app/records
     depends_on:
       - mongo
     restart: unless-stopped
