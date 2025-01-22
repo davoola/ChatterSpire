@@ -5,11 +5,11 @@ const bcrypt = require('bcryptjs');
 const connectDB = require('./config/db');
 const http = require('http');
 const socketio = require('socket.io');
-const Message = require('./models/Message');
 const Room = require('./models/Room');
 const User = require('./models/User');
 const multer = require('multer');
 const fs = require('fs');
+const fsPromises = require('fs').promises;
 
 const app = express();
 const server = http.createServer(app);
@@ -105,6 +105,38 @@ app.post('/upload', upload.single('file'), (req, res) => {
     }
 });
 
+// 创建records目录（如果不存在）
+const recordsDir = path.join(__dirname, 'records');
+if (!fs.existsSync(recordsDir)) {
+    fs.mkdirSync(recordsDir, { recursive: true });
+}
+
+// 读取房间消息记录
+async function readRoomMessages(roomId) {
+    try {
+        const filePath = path.join(recordsDir, `_records-${roomId}.json`);
+        const data = await fsPromises.readFile(filePath, 'utf8');
+        return JSON.parse(data);
+    } catch (err) {
+        if (err.code === 'ENOENT') {
+            return [];
+        }
+        throw err;
+    }
+}
+
+// 保存房间消息记录
+async function saveRoomMessage(roomId, message) {
+    try {
+        const filePath = path.join(recordsDir, `_records-${roomId}.json`);
+        let messages = await readRoomMessages(roomId);
+        messages.push(message);
+        await fsPromises.writeFile(filePath, JSON.stringify(messages, null, 2), 'utf8');
+    } catch (err) {
+        console.error('保存消息失败:', err);
+    }
+}
+
 // 添加 getRoom 函数
 function getRoom(roomId) {
     if (!roomUsers.has(roomId)) {
@@ -121,83 +153,59 @@ io.on('connection', (socket) => {
     
     // 加入房间
     socket.on('joinRoom', async ({ roomId, username, avatar }) => {
-        socket.join(roomId);  // 添加这行，确保用户加入房间
+        socket.join(roomId);
         
-        // 更新房间用户列表
-        if (!roomUsers.has(roomId)) {
-            roomUsers.set(roomId, {
-                users: new Map(),
-                currentSyncVideo: null,
-                syncParticipants: new Set()
-            });
-        }
-        
-        // 获取房间对象
-        const room = roomUsers.get(roomId);
-        // 添加用户到用户列表
-        room.users.set(socket.id, { username, avatar });
-        
-        // 获取房间的实际在线用户列表
-        const usersInRoom = Array.from(room.users.values());
-        const onlineCount = usersInRoom.length;
-        
-        // 广播更新后的在线人数和用户列表
-        io.to(roomId).emit('updateOnlineUsers', {
-            count: onlineCount,
-            users: usersInRoom
-        });
-        
-        // 发送系统消息
-        io.to(roomId).emit('message', {
-            username: 'System',
-            message: `${username} 加入了聊天室`,
-            timestamp: new Date().toLocaleTimeString(),
-            avatar: '/avatar/default.png'
-        });
-
-        // 加载历史消息
         try {
-            const dbRoom = await Room.findOne({ roomId });
-            if (dbRoom && dbRoom.saveMessages) {
-                const messages = await Message.find({ roomId })
-                    .populate({
-                        path: 'userId',
-                        select: 'username nickname gender city bio avatar',
-                        model: 'User'
-                    })
-                    .sort({ timestamp: 1 })
-                    .limit(10000)
-                    .lean();
-                
-                const messagesWithUserInfo = await Promise.all(messages.map(async msg => {
-                    if (msg.userId) {
-                        const user = msg.userId;
-                        return {
-                            ...msg,
-                            username: user.username,
-                            nickname: user.nickname || user.username,
-                            gender: user.gender === 'male' ? '男' : (user.gender === 'female' ? '女' : '未设置'),
-                            city: user.city || '未设置',
-                            bio: user.bio || '这个用户很懒，什么都没写...',
-                            timestamp: new Date(msg.timestamp).toLocaleTimeString(),
-                            avatar: user.avatar.startsWith('/') ? user.avatar : '/' + user.avatar
-                        };
-                    }
-                    return {
-                        ...msg,
-                        nickname: msg.nickname || msg.username,
-                        gender: msg.gender || '未设置',
-                        city: msg.city || '未设置',
-                        bio: msg.bio || '这个用户很懒，什么都没写...',
+            // 获取用户完整信息
+            const user = await User.findOne({ username })
+                .select('username nickname gender city bio avatar')
+                .lean();
+            
+            // 更新房间用户列表
+            const currentRoom = getRoom(roomId);
+            currentRoom.users.set(socket.id, {
+                username: user.username,
+                nickname: user.nickname || user.username,
+                gender: user.gender === 'male' ? '男' : (user.gender === 'female' ? '女' : '未设置'),
+                city: user.city || '未设置',
+                bio: user.bio || '这个用户很懒，什么都没写...',
+                avatar: user.avatar || '/avatar/default.png'
+            });
+            
+            const currentUsersInRoom = Array.from(currentRoom.users.values());
+            const onlineCount = currentUsersInRoom.length;
+            
+            io.to(roomId).emit('updateOnlineUsers', {
+                count: onlineCount,
+                users: currentUsersInRoom
+            });
+            
+            io.to(roomId).emit('message', {
+                username: 'System',
+                message: `${username} 加入了聊天室`,
+                timestamp: new Date().toLocaleTimeString(),
+                avatar: '/avatar/default.png'
+            });
+
+            // 加载历史消息
+            try {
+                const dbRoom = await Room.findOne({ roomId });
+                if (dbRoom && dbRoom.saveMessages) {
+                    const messages = await readRoomMessages(roomId);
+                    const formattedMessages = messages.map(msg => ({
+                        username: msg.username,
+                        nickname: msg.nickname,
+                        message: msg.message,
                         timestamp: new Date(msg.timestamp).toLocaleTimeString(),
                         avatar: msg.avatar || '/avatar/default.png'
-                    };
-                }));
-                
-                socket.emit('loadMessages', messagesWithUserInfo);
+                    }));
+                    socket.emit('loadMessages', formattedMessages);
+                }
+            } catch (err) {
+                console.error('加载历史消息失败:', err);
             }
         } catch (err) {
-            console.error('加载历史消息失败:', err);
+            console.error('处理用户加入失败:', err);
         }
     });
 
@@ -242,7 +250,6 @@ io.on('connection', (socket) => {
 
     // 处理聊天消息
     socket.on('chatMessage', async (data) => {
-        
         if (!data.message || !data.message.trim()) {
             return;
         }
@@ -250,44 +257,29 @@ io.on('connection', (socket) => {
         try {
             const room = await Room.findOne({ roomId: data.roomId });
             const user = await User.findById(data.userId)
-                .select('username nickname gender city bio avatar')
+                .select('username nickname avatar')
                 .lean();
 
             if (!user) {
                 throw new Error('用户不存在');
             }
 
-            const genderDisplay = user.gender === 'male' ? '男' : 
-                                (user.gender === 'female' ? '女' : '未设置');
-
             const messageData = {
-                username: data.username,
+                username: user.username,
                 nickname: user.nickname || user.username,
-                gender: genderDisplay,
-                city: user.city || '未设置',
-                bio: user.bio || '这个用户很懒，什么都没写...',
-                message: data.message.trim(),
+                avatar: user.avatar || '/avatar/default.png',
                 timestamp: new Date().toLocaleTimeString(),
-                avatar: user.avatar.startsWith('/') ? user.avatar : '/' + user.avatar,
-                userId: user._id
+                message: data.message.trim()
             };
 
             io.to(data.roomId).emit('message', messageData);
 
             if (room && room.saveMessages) {
-                const message = new Message({
-                    roomId: data.roomId,
-                    userId: data.userId,
-                    username: data.username,
-                    message: data.message.trim(),
+                await saveRoomMessage(data.roomId, {
+                    ...messageData,
                     timestamp: new Date(),
-                    avatar: messageData.avatar,
-                    nickname: messageData.nickname,
-                    gender: genderDisplay,
-                    city: messageData.city,
-                    bio: messageData.bio
+                    avatar: user.avatar || '/avatar/default.png'
                 });
-                await message.save();
             }
         } catch (err) {
             console.error('处理消息失败:', err);
@@ -314,24 +306,16 @@ io.on('connection', (socket) => {
                 timestamp: messageData.timestamp.toLocaleTimeString()
             });
 
-            // 如果房间设置了保存消息，则保存到数据库
+            // 如果房间设置了保存消息，则保存到 JSON 文件
             const room = await Room.findOne({ roomId: data.roomId });
             if (room && room.saveMessages) {
-                const message = new Message({
-                    roomId: data.roomId,
-                    username: data.username,
-                    message: data.message,
-                    fileUrl: data.fileUrl,
-                    fileType: data.fileType,
-                    fileName: data.fileName,
-                    timestamp: messageData.timestamp,
-                    avatar: messageData.avatar,
-                    type: 'file'
+                await saveRoomMessage(data.roomId, {
+                    ...messageData,
+                    timestamp: messageData.timestamp
                 });
-                await message.save();
             }
         } catch (err) {
-            console.error('处理文件消息失���:', err);
+            console.error('处理文件消息失败:', err);
         }
     });
 

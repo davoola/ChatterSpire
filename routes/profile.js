@@ -7,7 +7,6 @@ const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const parseMarkdown = require('../utils/markdown');
 const Room = require('../models/Room');
-const Message = require('../models/Message');
 
 // 确保上传目录存在
 const uploadDir = path.join(__dirname, '..', 'public', 'avatar');
@@ -21,40 +20,39 @@ const storage = multer.diskStorage({
         cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
-        // 使用时间戳和用户ID确保文件名唯一
-        const timestamp = Date.now();
-        const ext = path.extname(file.originalname);
-        cb(null, `${req.session.user.id}-${timestamp}${ext}`);
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
 
-const upload = multer({ 
+const upload = multer({
     storage: storage,
     limits: {
         fileSize: 5 * 1024 * 1024 // 限制5MB
     },
     fileFilter: function (req, file, cb) {
-        const allowedTypes = /jpeg|jpg|png|gif/;
-        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = allowedTypes.test(file.mimetype);
-        if (extname && mimetype) {
+        const filetypes = /jpeg|jpg|png|gif/;
+        const mimetype = filetypes.test(file.mimetype);
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+
+        if (mimetype && extname) {
             return cb(null, true);
         }
-        cb(null, false);
-        cb(new Error('只支持 JPG、PNG、GIF 格式的图片文件!'));
+        cb(new Error('只支持图片文件!'));
     }
 });
 
 // 中间件：检查用户是否登录
-const auth = (req, res, next) => {
-    if (!req.session.user) {
-        return res.redirect('/login');
+const isAuthenticated = (req, res, next) => {
+    if (req.session.user) {
+        next();
+    } else {
+        res.redirect('/auth/login');
     }
-    next();
 };
 
 // 获取个人信息
-router.get('/', auth, async (req, res) => {
+router.get('/', isAuthenticated, async (req, res) => {
     try {
         const user = await User.findById(req.session.user.id).select('-password');
         
@@ -79,102 +77,83 @@ router.get('/', auth, async (req, res) => {
 });
 
 // 更新个人信息
-router.post('/update', auth, async (req, res) => {
+router.post('/update', isAuthenticated, async (req, res) => {
     try {
         const { nickname, email, city, gender, bio } = req.body;
-
-        // 先查找用户
-        const user = await User.findById(req.session.user.id);
-        if (!user) {
-            return res.status(404).json({ msg: '用户不存在' });
-        }
-
+        
         // 更新用户信息
         const updatedUser = await User.findByIdAndUpdate(
             req.session.user.id,
             {
-                nickname: nickname || user.nickname,
-                email: email || user.email,
-                city: city || user.city,
-                gender: gender || user.gender,
-                bio: bio || user.bio
+                nickname,
+                email,
+                city,
+                gender,
+                bio
             },
-            { 
-                new: true,
-                runValidators: true 
-            }
-        );
+            { new: true }  // 返回更新后的文档
+        ).select('-password');
 
-        // 解析更新后的 bio
-        const parsedBio = updatedUser.bio ? parseMarkdown(updatedUser.bio.toString()) : '';
+        // 解析个人简介中的 Markdown
+        const userObj = updatedUser.toObject();
+        userObj.bio = bio || '';
 
         res.json({ 
-            msg: '更新成功',
-            user: {
-                ...updatedUser.toObject(),
-                parsedBio
-            }
+            success: true,
+            user: userObj
         });
     } catch (err) {
-        console.error('更新个人信息错误：', err);
-        res.status(500).json({ msg: '更新失败', error: err.message });
+        console.error('更新个人信息失败:', err);
+        res.status(500).json({ msg: '更新失败' });
     }
 });
 
 // 上传头像
-router.post('/avatar', auth, upload.single('avatar'), async (req, res) => {
+router.post('/upload-avatar', isAuthenticated, upload.single('avatar'), async (req, res) => {
     try {
         if (!req.file) {
-            return res.status(400).json({ msg: '请选择有效的图片文件' });
+            return res.status(400).json({ msg: '请选择要上传的文件' });
         }
 
-        // 先查找用户
+        // 获取旧头像路径
         const user = await User.findById(req.session.user.id);
-        if (!user) {
-            return res.status(404).json({ msg: '用户不存在' });
-        }
+        const oldAvatar = user.avatar;
 
-        // 删除旧头像（如果不是默认头像）
-        if (user.avatar && user.avatar !== '/avatar/default.png') {
-            const oldAvatarPath = path.join(__dirname, '..', 'public', user.avatar);
-            if (fs.existsSync(oldAvatarPath)) {
-                try {
-                    fs.unlinkSync(oldAvatarPath);
-                } catch (err) {
-                    console.error('删除旧头像失败:', err);
-                }
+        // 如果存在旧头像且不是默认头像，则删除
+        if (oldAvatar && oldAvatar !== '/avatar/default.png') {
+            const oldAvatarPath = path.join(__dirname, '..', 'public', oldAvatar);
+            try {
+                await fs.promises.access(oldAvatarPath);
+                await fs.promises.unlink(oldAvatarPath);
+            } catch (err) {
+                console.error('删除旧头像失败:', err);
             }
         }
 
-        // 更新头像路径
-        const avatarPath = '/avatar/' + req.file.filename;
-        const updatedUser = await User.findByIdAndUpdate(
-            req.session.user.id,
-            { avatar: avatarPath },
-            { new: true }
-        );
+        // 更新用户头像
+        const avatarUrl = '/avatar/' + req.file.filename;
+        await User.findByIdAndUpdate(req.session.user.id, {
+            avatar: avatarUrl
+        });
 
-        // 更新 session 中的用户头像
-        req.session.user.avatar = avatarPath;
-
-        res.json({ msg: '上传成功', path: avatarPath });
+        res.json({ 
+            success: true,
+            avatar: avatarUrl
+        });
     } catch (err) {
-        console.error('头像上传错误:', err);
-        res.status(500).json({ msg: '上传失败', error: err.message });
+        console.error('头像上传失败:', err);
+        res.status(500).json({ msg: '头像上传失败' });
     }
 });
 
-// 修改密码
-router.post('/change-password', auth, async (req, res) => {
+// 更改密码
+router.post('/change-password', isAuthenticated, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
-        
+
         // 获取用户信息
         const user = await User.findById(req.session.user.id);
-        if (!user) {
-            return res.status(404).json({ msg: '用户不存在' });
-        }
-
+        
         // 验证当前密码
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
@@ -182,17 +161,17 @@ router.post('/change-password', auth, async (req, res) => {
         }
 
         // 加密新密码
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
         // 更新密码
         await User.findByIdAndUpdate(req.session.user.id, {
             password: hashedPassword
         });
 
-        res.json({ msg: '密码修改成功' });
+        res.json({ success: true });
     } catch (err) {
-        console.error('修改密码错误：', err);
-        res.status(500).json({ msg: '服务器错误' });
+        res.status(500).json({ msg: '密码更新失败' });
     }
 });
 
@@ -254,25 +233,6 @@ router.delete('/rooms/:roomId', async (req, res) => {
         }
 
         await Room.deleteOne({ _id: req.params.roomId });
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ msg: '服务器错误' });
-    }
-});
-
-// 清除房间消息
-router.delete('/rooms/:roomId/messages', async (req, res) => {
-    try {
-        const room = await Room.findOne({ 
-            _id: req.params.roomId,
-            createdBy: req.session.user.id 
-        });
-        
-        if (!room) {
-            return res.status(404).json({ msg: '房间不存在' });
-        }
-
-        await Message.deleteMany({ roomId: room.roomId });
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ msg: '服务器错误' });

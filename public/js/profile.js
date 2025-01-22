@@ -25,6 +25,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // 检查用户角色并显示/隐藏我的房间部分
+    const userRole = document.body.getAttribute('data-user-role');
+    const roomsSection = document.getElementById('roomsSection');
+    if (roomsSection) {
+        if (userRole === 'admin') {
+            roomsSection.style.display = 'block';
+            // 只有显示房间部分时才加载房间列表
+            loadMyRooms();
+        } else {
+            roomsSection.style.display = 'none';
+        }
+    }
+
     // 添加主题切换按钮事件监听
     if (themeToggle) {
         themeToggle.addEventListener('click', toggleTheme);
@@ -42,9 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
     const changePasswordForm = document.getElementById('changePasswordForm');
     const passwordError = document.getElementById('passwordError');
-
-    // 加载用户创建的房间列表
-    loadMyRooms();
 
     // 密码修改按钮事件
     if (changePasswordBtn && changePasswordForm) {
@@ -189,27 +199,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 切换到编辑模式
-    if (editProfileBtn) {
+    // 编辑按钮事件处理
+    if (editProfileBtn && profileForm && displayMode) {
         editProfileBtn.addEventListener('click', () => {
-            if (displayMode) displayMode.style.display = 'none';
-            if (profileForm) profileForm.style.display = 'block';
-            if (editAvatarBtn) editAvatarBtn.style.display = 'flex';
-            if (editProfileBtn) editProfileBtn.style.display = 'none';
-            // 初始化 Markdown 预览
-            if (bioEditor && markdownPreview) {
-                updatePreview();
-            }
+            displayMode.style.display = 'none';
+            profileForm.style.display = 'block';
+            editProfileBtn.style.display = 'none';
         });
     }
 
-    // 取消编辑
-    if (cancelEditBtn) {
+    // 取消编辑按钮事件处理
+    if (cancelEditBtn && profileForm && displayMode && editProfileBtn) {
         cancelEditBtn.addEventListener('click', () => {
-            if (displayMode) displayMode.style.display = 'block';
-            if (profileForm) profileForm.style.display = 'none';
-            if (editAvatarBtn) editAvatarBtn.style.display = 'none';
-            if (editProfileBtn) editProfileBtn.style.display = 'block';
+            displayMode.style.display = 'block';
+            profileForm.style.display = 'none';
+            editProfileBtn.style.display = 'block';
+            // 重置表单
+            profileForm.reset();
         });
     }
 
@@ -244,6 +250,19 @@ document.addEventListener('DOMContentLoaded', () => {
         avatarInput.addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (file) {
+                // 检查文件大小（限制为2MB）
+                if (file.size > 20 * 1024 * 1024) {
+                    alert('文件大小不能超过20MB');
+                    return;
+                }
+
+                // 检查文件类型
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('只支持JPG、PNG和GIF格式的图片');
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const avatarPreview = document.getElementById('avatarPreview');
@@ -256,17 +275,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 const formData = new FormData();
                 formData.append('avatar', file);
                 try {
-                    const res = await fetch('/profile/avatar', {
+                    const res = await fetch('/profile/upload-avatar', {
                         method: 'POST',
                         body: formData
                     });
-                    const data = await res.json();
+                    
                     if (!res.ok) {
-                        alert(data.msg || '上传失败');
+                        const errorData = await res.json();
+                        throw new Error(errorData.msg || '上传失败');
+                    }
+                    
+                    const data = await res.json();
+                    if (data.success) {
+                        // 更新所有显示该用户头像的地方
+                        const avatarElements = document.querySelectorAll(`img[data-user="${document.body.getAttribute('data-username')}"]`);
+                        avatarElements.forEach(img => {
+                            img.src = data.avatar;
+                        });
+                    } else {
+                        throw new Error(data.msg || '上传失败');
                     }
                 } catch (err) {
                     console.error('上传失败:', err);
-                    alert('上传失败');
+                    alert(err.message || '上传失败，请确保文件格式正确且大小合适');
+                    // 恢复默认头像显示
+                    const avatarPreview = document.getElementById('avatarPreview');
+                    if (avatarPreview) {
+                        avatarPreview.src = '/avatar/default.png';
+                    }
                 }
             }
         });
@@ -280,10 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
         profileForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // 如果正在提交，则返回
             if (isSubmitting) return;
-            
-            // 设置提交标志
             isSubmitting = true;
 
             const formData = new FormData(this);
@@ -302,56 +335,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 const data = await res.json();
-                if (res.ok) {
+                
+                if (res.ok && data.success) {
                     // 更新显示的内容
-                    const bioContent = document.querySelector('.bio-content');
-                    if (bioContent) {
-                        bioContent.innerHTML = data.user.parsedBio || '<p>这个人很懒，什么都没写~</p>';
-                    }
-                    
-                    // 更新显示模式下的信息
-                    try {
+                    if (data.user) {
+                        // 更新个人简介
+                        const bioContent = document.querySelector('.bio-content');
+                        if (bioContent) {
+                            const bioText = data.user.bio || '这个人很懒，什么都没写~';
+                            try {
+                                const emojiText = joypixels.shortnameToUnicode(bioText);
+                                const html = marked.parse(emojiText);
+                                bioContent.innerHTML = html;
+                                hljs.highlightAll();
+                            } catch (err) {
+                                console.error('解析bio失败:', err);
+                                bioContent.innerHTML = bioText;
+                            }
+                        }
+
+                        // 更新其他信息
                         const displayElements = {
                             nickname: document.getElementById('displayNickname'),
                             email: document.getElementById('displayEmail'),
                             city: document.getElementById('displayCity'),
                             gender: document.getElementById('displayGender')
                         };
-                        
-                        // 检查所有元素是否存在
-                        if (Object.values(displayElements).every(el => el)) {
-                            displayElements.nickname.textContent = data.user.nickname || '';
-                            displayElements.email.textContent = data.user.email || '';
-                            displayElements.city.textContent = data.user.city || '';
-                            // 转换性别显示
-                            const genderMap = {
-                                'male': '男',
-                                'female': '女',
-                                'other': '其他'
-                            };
-                            displayElements.gender.textContent = genderMap[data.user.gender] || '其他';
-                        } else {
-                            console.error('某些显示元素未找到');
-                        }
-                    } catch (err) {
-                        console.error('更新显示内容时出错:', err);
+
+                        Object.entries(displayElements).forEach(([key, element]) => {
+                            if (element) {
+                                if (key === 'gender') {
+                                    const genderMap = {
+                                        'male': '男',
+                                        'female': '女',
+                                        'other': '其他'
+                                    };
+                                    element.textContent = genderMap[data.user[key]] || '其他';
+                                } else {
+                                    element.textContent = data.user[key] || '';
+                                }
+                            }
+                        });
                     }
 
-                    // 切换回显示模式
-                    document.getElementById('displayMode').style.display = 'block';
-                    document.getElementById('profileForm').style.display = 'none';
-                    document.getElementById('editAvatarBtn').style.display = 'none';
-                    document.getElementById('editProfileBtn').style.display = 'block';
+                    // 切换显示模式
+                    if (displayMode) displayMode.style.display = 'block';
+                    if (profileForm) profileForm.style.display = 'none';
+                    if (editProfileBtn) editProfileBtn.style.display = 'block';
 
                     alert('更新成功！');
                 } else {
-                    alert(data.msg || '更新失败');
+                    throw new Error(data.msg || '更新失败');
                 }
             } catch (err) {
                 console.error('更新失败:', err);
-                alert('更新失败，请稍后重试');
+                alert(err.message || '更新失败，请稍后重试');
             } finally {
-                // 重置提交标志
                 isSubmitting = false;
             }
         });
@@ -523,6 +562,7 @@ async function joinRoom() {
         const verifyData = await verifyResponse.json();
         
         if (!verifyResponse.ok) {
+            // 显示具体的错误信息
             alert(verifyData.msg || '无法进入房间');
             return;
         }
@@ -535,7 +575,7 @@ async function joinRoom() {
         window.location.href = `/chat/${roomId}`;
     } catch (err) {
         console.error('验证房间失败:', err);
-        alert('验证房间失败');
+        alert('验证房间失败，请稍后重试');
     }
 }
 

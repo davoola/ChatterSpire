@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
     <script src="/core/theme-manager.js" defer></script>
 </head>
-<body>
+<body data-user-role="<%= user.role %>">
     <div class="container profile-container">
         <div class="profile-header">
             <h2>个人中心</h2>
@@ -144,7 +144,7 @@
                     </form>
                 </div>
 
-                <div class="profile-section">
+                <div class="profile-section" id="roomsSection">
                     <div class="section-header">
                         <h3>我的房间</h3>
                     </div>

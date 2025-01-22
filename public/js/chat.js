@@ -441,8 +441,18 @@ socket.on('updateOnlineUsers', (data) => {
     if (onlineUsersList) {
         onlineUsersList.innerHTML = data.users.map(user => `
             <div class="online-user-item">
-                <img src="${user.avatar}" alt="头像" class="online-user-avatar" 
-                     onerror="this.src='/avatar/default.png'">
+                <div class="user-avatar-wrapper">
+                    <img src="${user.avatar}" alt="头像" class="online-user-avatar" 
+                         onerror="this.src='/avatar/default.png'">
+                    <div class="user-info-tooltip">
+                        <div class="user-info-line">
+                            ${user.nickname || user.username} | ${user.gender || '未设置'} | ${user.city || '未设置'}
+                        </div>
+                        <div class="user-info-bio">
+                            ${user.bio || '这个用户很懒，什么都没写...'}
+                        </div>
+                    </div>
+                </div>
                 <span class="online-user-name">${user.username}</span>
             </div>
         `).join('');
@@ -552,28 +562,11 @@ function addMessage(data) {
             console.warn('Markdown 渲染警告:', error);
             messageContent = '<pre><code>' + messageContent.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</code></pre>';
         }
-
-        let bioContent = '';
-        try {
-            bioContent = md.render(data.bio || '这个用户很懒，什么都没写...');
-        } catch (error) {
-            bioContent = data.bio || '这个用户很懒，什么都没写...';
-        }
         
         messageDiv.innerHTML = `
             <div class="message-content-wrapper">
                 <div class="message-header">
-                    <div class="user-avatar-wrapper">
-                        <img src="${data.avatar}" alt="头像" class="user-avatar" onerror="this.src='/avatar/default.png'">
-                        <div class="user-info-tooltip">
-                            <div class="user-info-line">
-                                ${data.nickname || data.username} | ${data.gender} | ${data.city}
-                            </div>
-                            <div class="user-info-bio">
-                                ${bioContent}
-                            </div>
-                        </div>
-                    </div>
+                    <img src="${data.avatar || '/avatar/default.png'}" alt="头像" class="user-avatar" onerror="this.src='/avatar/default.png'">
                     <span class="username">${data.username}</span>
                     <span class="timestamp">${data.timestamp}</span>
                 </div>
@@ -605,165 +598,6 @@ function addMessage(data) {
             } catch (e) {
                 console.warn('代码块高亮警告:', e);
                 block.textContent = block.textContent;
-            }
-        });
-
-        // 渲染 Mermaid 图表
-        messageDiv.querySelectorAll('.mermaid').forEach(element => {
-            try {
-                mermaid.init(undefined, element);
-            } catch (e) {
-                console.warn('Mermaid 初始化警告:', e);
-            }
-        });
-
-        // 初始化 Flowchart
-        messageDiv.querySelectorAll('.flowchart').forEach(element => {
-            try {
-                const diagram = flowchart.parse(element.textContent);
-                // 创建一个新的容器用于渲染SVG
-                const container = document.createElement('div');
-                const flowchartId = element.id;
-                container.id = flowchartId;
-                
-                // 设置容器样式
-                container.style.width = '100%';
-                container.style.minHeight = '400px'; // 增加最小高度
-                container.style.backgroundColor = 'transparent';
-                container.style.overflow = 'visible'; // 确保内容不被裁剪
-                container.style.margin = '20px 0'; // 添加上下边距
-                container.style.display = 'flex'; // 使用flex布局
-                container.style.justifyContent = 'center'; // 水平居中
-                container.style.alignItems = 'center'; // 垂直居中
-                
-                // 先添加容器到DOM
-                element.innerHTML = '';
-                element.appendChild(container);
-                
-                // 等待DOM更新完成后再渲染
-                setTimeout(() => {
-                    try {
-                        if (document.getElementById(flowchartId)) {
-                            diagram.drawSVG(flowchartId, {
-                                'line-width': 3, // 增加线条宽度
-                                'line-length': 50,
-                                'text-margin': 10,
-                                'font-size': 16, // 增加字体大小
-                                'font-family': 'Arial, "Microsoft YaHei"', // 添加中文字体支持
-                                'font-weight': 'normal',
-                                'font-color': '#333',
-                                'line-color': '#666',
-                                'element-color': '#666',
-                                'fill': 'white',
-                                'yes-text': '是',
-                                'no-text': '否',
-                                'arrow-end': 'block',
-                                'scale': 1,
-                                'symbols': {
-                                    'start': {
-                                        'font-color': 'white',
-                                        'element-color': '#4a90e2',
-                                        'fill': '#4a90e2',
-                                        'font-weight': 'bold',
-                                        'font-size': 16
-                                    },
-                                    'end': {
-                                        'font-color': 'white',
-                                        'element-color': '#67c23a',
-                                        'fill': '#67c23a',
-                                        'font-weight': 'bold',
-                                        'font-size': 16
-                                    },
-                                    'operation': {
-                                        'font-color': '#333',
-                                        'element-color': '#666',
-                                        'fill': 'white',
-                                        'font-size': 16
-                                    },
-                                    'subroutine': {
-                                        'font-color': '#333',
-                                        'element-color': '#666',
-                                        'fill': 'white',
-                                        'font-size': 16
-                                    },
-                                    'condition': {
-                                        'font-color': '#333',
-                                        'element-color': '#9c27b0',
-                                        'fill': 'white',
-                                        'font-size': 16,
-                                        'line-width': 3
-                                    },
-                                    'inputoutput': {
-                                        'font-color': '#333',
-                                        'element-color': '#666',
-                                        'fill': 'white',
-                                        'font-size': 16
-                                    }
-                                }
-                            });
-
-                            // 获取SVG元素并设置样式
-                            const svg = container.querySelector('svg');
-                            if (svg) {
-                                // 设置SVG样式
-                                svg.style.maxWidth = '100%';
-                                svg.style.width = '100%';
-                                svg.style.height = 'auto';
-                                svg.style.minHeight = '400px';
-                                
-                                // 确保SVG内容完可见
-                                const bbox = svg.getBBox();
-                                const padding = 40; // 增加内边距
-                                svg.setAttribute('viewBox', `${bbox.x - padding} ${bbox.y - padding} ${bbox.width + padding * 2} ${bbox.height + padding * 2}`);
-                                
-                                // 修复SVG中的文本和线条
-                                const paths = svg.querySelectorAll('path');
-                                const texts = svg.querySelectorAll('text');
-                                
-                                paths.forEach(path => {
-                                    path.style.strokeWidth = '2';
-                                    path.style.stroke = '#666';
-                                });
-                                
-                                texts.forEach(text => {
-                                    text.style.fill = '#333';
-                                    text.style.fontSize = '16px';
-                                    text.style.fontFamily = 'Arial, "Microsoft YaHei"';
-                                });
-
-                                // 监听主题变化
-                                const observer = new MutationObserver((mutations) => {
-                                    mutations.forEach((mutation) => {
-                                        if (mutation.target.classList.contains('dark-theme')) {
-                                            paths.forEach(path => {
-                                                path.style.stroke = '#fff';
-                                            });
-                                            texts.forEach(text => {
-                                                text.style.fill = '#fff';
-                                            });
-                                        } else {
-                                            paths.forEach(path => {
-                                                path.style.stroke = '#666';
-                                            });
-                                            texts.forEach(text => {
-                                                text.style.fill = '#333';
-                                            });
-                                        }
-                                    });
-                                });
-                                observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-                            }
-                        } else {
-                            console.warn('Flowchart 容器未找到:', flowchartId);
-                        }
-                    } catch (renderError) {
-                        console.warn('Flowchart 渲染错误:', renderError);
-                        container.innerHTML = `<pre>Flowchart 渲染失败: ${renderError.message}</pre>`;
-                    }
-                }, 200); // 增加等待时间
-            } catch (parseError) {
-                console.warn('Flowchart 解析错误:', parseError);
-                element.innerHTML = `<pre>Flowchart 解析失败: ${parseError.message}</pre>`;
             }
         });
     }

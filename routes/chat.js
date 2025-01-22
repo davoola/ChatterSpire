@@ -2,112 +2,98 @@ const express = require('express');
 const router = express.Router();
 const Room = require('../models/Room');
 const User = require('../models/User');
-const Message = require('../models/Message');
+const path = require('path');
+const fs = require('fs').promises;
 
-// 验证房间密码
-router.post('/verify-room', async (req, res) => {
+// 中间件：检查用户是否登录
+const isAuthenticated = (req, res, next) => {
+    if (req.session.user) {
+        next();
+    } else {
+        res.redirect('/auth/login');
+    }
+};
+
+// 获取房间列表
+router.get('/', isAuthenticated, async (req, res) => {
     try {
-        const { roomId, password } = req.body;
-        
-        // 查找房间
-        let room = await Room.findOne({ roomId });
-        
-        // 如果房间不存在，第一个用户可以创建
-        if (!room) {
-            room = new Room({
-                roomId,
-                name: `聊天室 ${roomId}`,
-                password: password || '',
-                createdBy: req.session.user.id,
-                status: 'active'
-            });
-            await room.save();
-            
-            req.session.verifiedRooms = req.session.verifiedRooms || {};
-            req.session.verifiedRooms[roomId] = true;
-            
-            return res.json({ 
-                msg: '房间创建成功',
-                isNewRoom: true
-            });
-        }
+        const rooms = await Room.find({ status: 'active' })
+            .select('roomId name description password')
+            .lean();
 
-        // 检查房间状态
-        if (room.status === 'disabled') {
-            return res.status(403).json({ msg: '该房间已被禁用' });
-        }
-
-        // 检查密码
-        if (room.password && room.password !== '') {
-            // 如果房间有密码，必须提供正确的密码
-            if (!password) {
-                return res.status(403).json({ msg: '该房间需要密码' });
-            }
-            if (password !== room.password) {
-                return res.status(403).json({ msg: '房间密码错误' });
-            }
-        } else {
-            // 如果房间没有密码，但用户提供了密码
-            if (password && password.trim() !== '') {
-                return res.status(403).json({ msg: '该房间不需要密码' });
-            }
-        }
-
-        // 验证通过，将房间信息存入 session
-        req.session.verifiedRooms = req.session.verifiedRooms || {};
-        req.session.verifiedRooms[roomId] = true;
-
-        res.json({ msg: '验证成功' });
+        res.render('rooms', { 
+            rooms,
+            user: req.session.user
+        });
     } catch (err) {
-        console.error('验证房间失败:', err);
+        console.error('获取房间列表错误:', err);
         res.status(500).json({ msg: '服务器错误' });
     }
 });
 
 // 进入聊天室
-router.get('/:roomId', async (req, res) => {
-    if (!req.session.user) {
-        return res.redirect('/login');
-    }
-
+router.get('/:roomId', isAuthenticated, async (req, res) => {
     try {
-        // 查找房间信息
         const room = await Room.findOne({ roomId: req.params.roomId });
         if (!room) {
-            return res.redirect('/profile');
+            return res.redirect('/');
         }
 
-        // 获取完整的用户信息
-        const user = await User.findById(req.session.user.id).select('-password');
+        // 如果房间被禁用且用户不是管理员或房主
+        if (room.status === 'disabled' && 
+            req.session.user.role !== 'admin' && 
+            room.createdBy.toString() !== req.session.user.id) {
+            return res.redirect('/');
+        }
+
+        // 确保用户数据的完整性和安全性
+        const user = await User.findById(req.session.user.id)
+            .select('username nickname gender city bio avatar')
+            .lean();
+
         if (!user) {
-            return res.redirect('/login');
+            return res.redirect('/auth/login');
         }
 
-        // 检查是否已验证密码
-        if (room.password && room.password !== '') {
-            const verifiedRooms = req.session.verifiedRooms || {};
-            if (!verifiedRooms[req.params.roomId]) {
-                return res.redirect('/profile');
-            }
-        }
+        const sanitizedUser = {
+            id: user._id,
+            username: user.username,
+            nickname: user.nickname || user.username,
+            gender: user.gender || '',
+            city: user.city || '',
+            bio: user.bio || '',
+            avatar: user.avatar || '/avatar/default.png'
+        };
 
-        // 确保头像路径正确
-        const userAvatar = user.avatar.startsWith('/') ? user.avatar : '/' + user.avatar;
-
-        res.render('chat', { 
-            roomId: req.params.roomId, 
-            user: {
-                ...user.toObject(),
-                id: user._id,
-                avatar: userAvatar,
-                role: user.role
-            },
+        res.render('chat', {
+            title: room.name,
             room: room,
-            isCreator: room.createdBy.toString() === req.session.user.id
+            user: sanitizedUser,
+            roomId: req.params.roomId
         });
     } catch (err) {
-        console.error('进入聊天室失败:', err);
-        res.redirect('/profile');
+        console.error('加载聊天室失败:', err);
+        res.redirect('/');
+    }
+});
+
+// 验证房间密码
+router.post('/:roomId/verify-password', async (req, res) => {
+    try {
+        const { password } = req.body;
+        const room = await Room.findOne({ roomId: req.params.roomId });
+        
+        if (!room) {
+            return res.status(404).json({ msg: '房间不存在' });
+        }
+
+        if (room.password !== password) {
+            return res.status(400).json({ msg: '密码错误' });
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ msg: '服务器错误' });
     }
 });
 
@@ -158,19 +144,54 @@ router.get('/room/:roomId', async (req, res) => {
     }
 });
 
-// 保存消息
-router.post('/messages', async (req, res) => {
+// 验证房间
+router.post('/verify-room', async (req, res) => {
     try {
-        const { roomId, content, type } = req.body;
-        const message = new Message({
-            roomId,
-            userId: req.session.user.id,
-            content,
-            type: type || 'text'
+        const { roomId, password } = req.body;
+        
+        // 检查房间是否存在
+        const room = await Room.findOne({ roomId });
+        
+        if (!room) {
+            // 检查是否是管理员
+            if (req.session.user.role !== 'admin') {
+                return res.status(403).json({ msg: '只有管理员可以创建新房间' });
+            }
+
+            // 如果是管理员，创建新房间
+            const newRoom = new Room({
+                roomId,
+                name: roomId,  // 使用 roomId 作为默认名称
+                password: password || '',
+                createdBy: req.session.user.id,
+                status: 'active'
+            });
+            
+            await newRoom.save();
+            return res.json({ 
+                success: true,
+                isNewRoom: true
+            });
+        }
+        
+        // 如果房间存在且有密码，验证密码
+        if (room.password && room.password !== password) {
+            return res.status(400).json({ msg: '密码错误' });
+        }
+        
+        // 如果房间被禁用且用户不是管理员或房主
+        if (room.status === 'disabled' && 
+            req.session.user.role !== 'admin' && 
+            room.createdBy.toString() !== req.session.user.id) {
+            return res.status(403).json({ msg: '该房间已被禁用' });
+        }
+        
+        res.json({ 
+            success: true,
+            isNewRoom: false
         });
-        await message.save();
-        res.json({ success: true, message });
     } catch (err) {
+        console.error('验证房间失败:', err);
         res.status(500).json({ msg: '服务器错误' });
     }
 });

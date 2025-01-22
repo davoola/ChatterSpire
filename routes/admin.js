@@ -3,7 +3,8 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const Room = require('../models/Room');
-const Message = require('../models/Message');
+const path = require('path');
+const fs = require('fs').promises;
 
 // 中间件：检查是否是管理员
 const isAdmin = async (req, res, next) => {
@@ -415,9 +416,23 @@ router.delete('/rooms/:id/messages', isAdmin, async (req, res) => {
             return res.status(404).json({ msg: '房间不存在' });
         }
 
-        await Message.deleteMany({ roomId: room.roomId });
-        res.json({ msg: '聊天记录清除成功' });
+        const recordsDir = path.join(__dirname, '..', 'records');
+        const filePath = path.join(recordsDir, `_records-${room.roomId}.json`);
+
+        try {
+            // 清空文件内容（写入空数组）
+            await fs.writeFile(filePath, JSON.stringify([], null, 2), 'utf8');
+            res.json({ msg: '聊天记录清除成功' });
+        } catch (err) {
+            if (err.code === 'ENOENT') {
+                // 如果文件不存在，也视为成功
+                res.json({ msg: '没有找到聊天记录' });
+            } else {
+                throw err;
+            }
+        }
     } catch (err) {
+        console.error('清除聊天记录失败:', err);
         res.status(500).json({ msg: '服务器错误' });
     }
 });
